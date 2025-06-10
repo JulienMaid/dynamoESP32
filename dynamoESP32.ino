@@ -4,10 +4,12 @@
 #include "super_timer_sw.h"
 #include "RTC_soft.h"
 #include "trace_debug.h"
-
+#include "convertAnalogValue.h"
 
 Ticker g_t_blinker;
 TimerEvent_t TimerTOP;
+ConvertAnalogValue ConvertVoltage(0, 0, 24.0, 0.0, 0, 1024);
+ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024);
 
 
 void setup()
