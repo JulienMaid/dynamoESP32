@@ -16,8 +16,8 @@ double mapDouble(long x, long in_min, long in_max, double out_min, double out_ma
 }
 
 
-ConvertAnalogValue::ConvertAnalogValue(uint32_t p_u32_AnalogMedian, uint32_t p_u32_DeadZone, double p_dble_MaxPosValue,
-    double p_dble_MinNegValue, uint32_t p_u32_AnalogMin, uint32_t p_u32_AnalogMax) :
+ConvertAnalogValue::ConvertAnalogValue(uint32_t p_u32_AnalogMedian, uint32_t p_u32_DeadZone, double p_dble_MinNegValue,
+    double p_dble_MaxPosValue, uint32_t p_u32_AnalogMin, uint32_t p_u32_AnalogMax) :
     m_u32_AnalogMin(p_u32_AnalogMin), m_u32_AnalogMax(p_u32_AnalogMax), m_u32_AnalogMedian(
         p_u32_AnalogMedian), m_u32_DeadZone(p_u32_DeadZone), m_dble_MaxPosValue(p_dble_MaxPosValue),
 		m_dble_MinNegValue(p_dble_MinNegValue)

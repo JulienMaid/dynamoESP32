@@ -10,8 +10,8 @@
 Ticker g_t_blinker;
 TimerEvent_t TimerTOP;
 
-ConvertAnalogValue ConvertVoltage(0, 0, 24.0, 0.0, 0, 1024);
-ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024);
+ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944);
+ConvertAnalogValue Convertcurrent(512, 10, -10.0, 10.0, 0, 1024);
 
 WS2811 bandeauLED(2,30);
 

@@ -13,7 +13,7 @@ public:
   //! @param p_u32_AnalogMin valeur analogique minimun
   //! @param p_u32_AnalogMax valeur analogique maximum
   ConvertAnalogValue(uint32_t p_u32_AnalogMedian = 512, uint32_t p_u32_DeadZone = 30,
-		  double p_dble_MaxPosValue = 1000, double p_dble_MinNegValue = -600, uint32_t p_u32_AnalogMin = 100,
+		  double p_dble_MinNegValue = -600, double p_dble_MaxPosValue = 1000, uint32_t p_u32_AnalogMin = 100,
 		  uint32_t p_u32_AnalogMax = 1024);
   virtual ~ConvertAnalogValue();
 
