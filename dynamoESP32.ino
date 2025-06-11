@@ -5,13 +5,17 @@
 #include "RTC_soft.h"
 #include "trace_debug.h"
 #include "convertAnalogValue.h"
+#include "LedBlinkingManagement.h"
 #include "esp32WS2811.h"
+
 
 Ticker g_t_blinker;
 TimerEvent_t TimerTOP;
 
 ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944);
 ConvertAnalogValue Convertcurrent(512, 10, -10.0, 10.0, 0, 1024);
+
+GestionLed g_t_GestionBuiltinLed(BUILTIN_LED);
 
 WS2811 bandeauLED(2,30);
 
@@ -24,7 +28,7 @@ void setup()
 
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
-	pinMode(BUILTIN_LED, OUTPUT);
+	g_t_GestionBuiltinLed.SetSequence3();
 
 	TimerTOP.Init(nullptr, 5000, true);
 	TimerTOP.Start();
@@ -38,6 +42,7 @@ void loop()
 	digitalWrite(BUILTIN_LED, 1);
 	delay(1000);
 	digitalWrite(BUILTIN_LED, 0);
+
 	delay(1000);
 
 	SEND_VTRACE(INFO, "Coucou: %d", toto);
