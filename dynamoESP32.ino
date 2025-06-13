@@ -10,19 +10,21 @@
 #include "userpipe.h"
 #include "pinout_definition.h"
 
-Ticker g_t_blinker;
+Ticker g_t_blinker; // Composants pour généer une horloge pour TimerSW (objets type TimerEvent_t)
 
-TimerEvent_t g_t_TimerMesures;
-TimerEvent_t g_t_TimerAffichage;
+TimerEvent_t g_t_TimerMesures; // Timer cadençant la prise de mesure
+TimerEvent_t g_t_TimerAffichage; // Timer cadençant l'affichage des résultats mesurées et calculés
 
-User_Pipe g_t_MeasuresPipe(200);
+User_Pipe g_t_MeasuresPipe(200); // Tuyau pour pouvoir stocker plusieurs mesures avant traitement
 
-ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944);
-ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024);
+ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944); // Paramètres à ajuster selon composants utilisés
 
-GestionLed g_t_GestionBuiltinLed(BUILTIN_LED);
+ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024); // Paramètres à ajuster selon composants utilisés
 
-WS2811 bandeauLED(2,30);
+GestionLed g_t_GestionBuiltinLed(BUILTIN_LED); // Object pour gérer le clignotement de la LED du module ESP32
+
+WS2811 bandeauLED(c_u32_BandeauLeds,30); // Paramètre à ajuster selon choix du nombre de LEDs
+
 
 
 #define INTERVALLE_MESURE_PUISSANCE_MS		200
@@ -36,14 +38,17 @@ typedef struct
 } s_coupleTensionIntensiteADC_t;
 
 void FonctionMesures(uint32_t p_u32_param, void * p_pv_param);
+/* les paramètres de la fonction sont inutiles ici mais nécessaire pour garder
+ * l'interface nécessaire pour être appelée par TimerSW */
+
 
 void setup()
 {
 	// initialisation du Timer matériel pour le module TimerSW
-	g_t_blinker.attach(0.05, Inc_Timer);
+	g_t_blinker.attach(0.05, Inc_Timer); // Résoltuion du timer 0.05 = 50ms
 
 	Init_Trace_Debug();
-    Set_Max_Debug_Level(ALL);
+    Set_Max_Debug_Level(INFO);
 
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
@@ -56,7 +61,6 @@ void setup()
     g_t_TimerAffichage.Start();
 }
 
-// The loop function is called in an endless loop
 void loop()
 {
     static double l_dble_ValeurEnergieCumulee = 0.0;
@@ -100,6 +104,7 @@ void loop()
 
 	        l_dble_ValeurPuissance = l_dble_ValeurTension * l_dble_ValeurIntensite;
 	        l_dble_ValeurEnergie = l_dble_ValeurPuissance * ((double)INTERVALLE_MESURE_PUISSANCE_MS)/1000.0;
+	        /* L'énergie est calculée en J => P(W) * T(s) = E(J) */
 
             l_dble_ValeurEnergieCumulee += l_dble_ValeurEnergie;
         }
@@ -108,6 +113,7 @@ void loop()
             SEND_VTRACE(ERROR, "Erreur sortie Pipe");
         }
 
+        // routine de debug pour mesure les temps de traitement en us
         l_u32_mesureTempsTraitement = micros() - l_u32_mesureTempsTraitement;
         SEND_VTRACE(DBG1, "Temps(us): %d", l_u32_mesureTempsTraitement);
     }
@@ -117,18 +123,19 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 {
     uint8_t l_u8_codeRetour = 0;
 
-	uint32_t l_u32_LectureTension = 0;
-	uint32_t l_u32_LectureIntensite = 0;
-
     s_coupleTensionIntensiteADC_t l_s_MeruresATrater;
+
+    // Instructions pour éviter des warnings à la compilation sur les paramètres non utilisés
+    (void)p_u32_param;
+    (void)p_pv_param;
 
 	// !!!!!!!!! Numéro de patte à définir !!!!!!!!!
 	l_s_MeruresATrater.m_u32_TensionADC = analogRead(c_u32_MesureTension);
 	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(c_u32_MesureIntensite);
 
+	// pour fixer une valeur mesurée sans avoir de carte ni de vélo !
 	l_s_MeruresATrater.m_u32_TensionADC = 200;
 	l_s_MeruresATrater.m_u32_IntensiteADC = 200;
-
 
 	/* pour éviter les accès concurrent à la ressource "userpipe" */
 	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
@@ -141,5 +148,3 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
         SEND_VTRACE(ERROR, "Erreur entrée Pipe");
     }
 }
-
-
