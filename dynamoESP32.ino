@@ -10,7 +10,8 @@
 
 
 Ticker g_t_blinker;
-TimerEvent_t TimerTOP;
+
+TimerEvent_t g_t_TimerMesures;
 
 ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944);
 ConvertAnalogValue Convertcurrent(512, 10, -10.0, 10.0, 0, 1024);
@@ -18,6 +19,10 @@ ConvertAnalogValue Convertcurrent(512, 10, -10.0, 10.0, 0, 1024);
 GestionLed g_t_GestionBuiltinLed(BUILTIN_LED);
 
 WS2811 bandeauLED(2,30);
+
+#define INTERVALLE_MESURE_PUISSANCE_MS		500
+
+void FonctionMesures(uint32_t p_u32_param, void * p_pv_param);
 
 void setup()
 {
@@ -30,27 +35,46 @@ void setup()
 
 	g_t_GestionBuiltinLed.SetSequence3();
 
-	TimerTOP.Init(nullptr, 5000, true);
-	TimerTOP.Start();
+	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
+	g_t_TimerMesures.Start();
 }
 
 // The loop function is called in an endless loop
 void loop()
 {
 	static uint8_t toto = 0;
-	SEND_VTRACE(DBG1, "Test pour François");
-	digitalWrite(BUILTIN_LED, 1);
-	delay(1000);
-	digitalWrite(BUILTIN_LED, 0);
+
+	uint32_t l_u32_valeurTest;
 
 	delay(1000);
 
-	SEND_VTRACE(INFO, "Coucou: %d", toto);
+	SEND_VTRACE(DBG1, "Test ConvertAnalogValue ConvertVoltage");
 
-	toto++;
+}
 
-	if(TimerTOP.IsTop() == true)
-	{
-		SEND_VTRACE(INFO, "Top Mesure !");
-	}
+void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
+{
+	uint32_t l_u32_LectureTension = 0;
+	uint32_t l_u32_LectureIntensite = 0;
+	double l_dble_ValeurTension = 0.0;
+	double l_dble_ValeurIntensite = 0.0;
+	double l_dble_ValeurPuissance = 0.0;
+	double l_dble_ValeurEnergie = 0.0;
+
+	uint32_t l_u32_mesureTempsTraitement = 0;
+
+	l_u32_mesureTempsTraitement = millis();
+
+	// !!!!!!!!! Numéro de patte à définir !!!!!!!!!
+	l_u32_LectureTension = analogRead(0);
+	l_u32_LectureTension = analogRead(0);
+
+	l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_u32_LectureTension);
+	l_dble_ValeurIntensite = Convertcurrent.GetConvertedValue(l_u32_LectureIntensite);
+
+	l_dble_ValeurPuissance = l_dble_ValeurTension * l_dble_ValeurIntensite;
+	l_dble_ValeurEnergie = l_dble_ValeurPuissance * ((double)INTERVALLE_MESURE_PUISSANCE_MS)/1000.0;
+
+	l_u32_mesureTempsTraitement = millis() - l_u32_mesureTempsTraitement;
+	SEND_VTRACE(DBG1, "Temps: %d", l_u32_mesureTempsTraitement);
 }
