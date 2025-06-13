@@ -8,6 +8,7 @@
 #include "LedBlinkingManagement.h"
 #include "esp32WS2811.h"
 #include "userpipe.h"
+#include "pinout_definition.h"
 
 Ticker g_t_blinker;
 
@@ -63,6 +64,7 @@ void loop()
     static double l_dble_ValeurTension = 0.0;
     static double l_dble_ValeurIntensite = 0.0;
 
+    // Affichage des résultats mesurés et calculés
     if(g_t_TimerAffichage.IsTop() == true)
     {
         SEND_VTRACE(INFO,"P: %0.1f W, En Prod: %4.3f Wh, U: %2.1f V, I: %2.2f A",
@@ -70,7 +72,7 @@ void loop()
 				l_dble_ValeurIntensite);
     }
 
-
+    // Récupération des grandeurs mesurées et calculs
     while(g_t_MeasuresPipe.Is_Pipe_Empty() == PIPE_NOT_EMPTY)
     {
         uint8_t l_u8_codeRetour = 0;
@@ -121,8 +123,8 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
     s_coupleTensionIntensiteADC_t l_s_MeruresATrater;
 
 	// !!!!!!!!! Numéro de patte à définir !!!!!!!!!
-	l_s_MeruresATrater.m_u32_TensionADC = analogRead(0);
-	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(0);
+	l_s_MeruresATrater.m_u32_TensionADC = analogRead(c_u32_MesureTension);
+	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(c_u32_MesureIntensite);
 
 	l_s_MeruresATrater.m_u32_TensionADC = 200;
 	l_s_MeruresATrater.m_u32_IntensiteADC = 200;
