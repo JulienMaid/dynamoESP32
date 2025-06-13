@@ -7,11 +7,14 @@
 #include "convertAnalogValue.h"
 #include "LedBlinkingManagement.h"
 #include "esp32WS2811.h"
-
+#include "userpipe.h"
 
 Ticker g_t_blinker;
 
 TimerEvent_t g_t_TimerMesures;
+TimerEvent_t g_t_TimerAffichage;
+
+User_Pipe g_t_MeasuresPipe(200);
 
 ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944);
 ConvertAnalogValue Convertcurrent(512, 10, -10.0, 10.0, 0, 1024);
@@ -20,7 +23,16 @@ GestionLed g_t_GestionBuiltinLed(BUILTIN_LED);
 
 WS2811 bandeauLED(2,30);
 
-#define INTERVALLE_MESURE_PUISSANCE_MS		500
+
+#define INTERVALLE_MESURE_PUISSANCE_MS		100
+#define INTERVALLE_AFFICHAGE_MESSURE_MS		1000
+
+
+typedef struct
+{
+    uint32_t m_u32_TensionADC;
+    uint32_t m_u32_IntensiteADC;
+} s_coupleTensionIntensiteADC_t;
 
 void FonctionMesures(uint32_t p_u32_param, void * p_pv_param);
 
@@ -30,6 +42,7 @@ void setup()
 	g_t_blinker.attach(0.05, Inc_Timer);
 
 	Init_Trace_Debug();
+    Set_Max_Debug_Level(ALL);
 
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
@@ -37,44 +50,77 @@ void setup()
 
 	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
 	g_t_TimerMesures.Start();
+
+    g_t_TimerAffichage.Init(nullptr, INTERVALLE_AFFICHAGE_MESSURE_MS, true);
+    g_t_TimerAffichage.Start();
 }
 
 // The loop function is called in an endless loop
 void loop()
 {
-	static uint8_t toto = 0;
+    static double l_dble_ValeurEnergieCumulee = 0.0;
+    double l_dble_ValeurPuissance = 0.0;
 
-	uint32_t l_u32_valeurTest;
+    if(g_t_TimerAffichage.IsTop() == true)
+    {
+        SEND_VTRACE(INFO,"Puissance: %0.4f W, Energie produite: %4.6f Wh", l_dble_ValeurPuissance, l_dble_ValeurEnergieCumulee/3600.0);
+    }
 
-	delay(1000);
 
-	SEND_VTRACE(DBG1, "Test ConvertAnalogValue ConvertVoltage");
+    while(g_t_MeasuresPipe.Is_Pipe_Empty() == PIPE_NOT_EMPTY)
+    {
+        uint8_t l_u8_codeRetour = 0;
 
+        s_coupleTensionIntensiteADC_t l_s_MeruresATraiter;
+	    double l_dble_ValeurTension = 0.0;
+	    double l_dble_ValeurIntensite = 0.0;
+	    double l_dble_ValeurEnergie = 0.0;
+
+    	uint32_t l_u32_mesureTempsTraitement = 0;
+
+    	l_u32_mesureTempsTraitement = millis();
+
+        l_u8_codeRetour = g_t_MeasuresPipe.Pipe_Out(&l_s_MeruresATraiter, sizeof(l_s_MeruresATraiter));
+
+        if(l_u8_codeRetour == 0)
+        {
+	        l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
+	        l_dble_ValeurIntensite = Convertcurrent.GetConvertedValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
+
+	        l_dble_ValeurPuissance = l_dble_ValeurTension * l_dble_ValeurIntensite;
+	        l_dble_ValeurEnergie = l_dble_ValeurPuissance * ((double)INTERVALLE_MESURE_PUISSANCE_MS)/1000.0;
+
+            l_dble_ValeurEnergieCumulee += l_dble_ValeurEnergie;
+        }
+        else
+        {
+            SEND_VTRACE(ERROR, "Erreur sortie Pipe");
+        }
+
+        l_u32_mesureTempsTraitement = millis() - l_u32_mesureTempsTraitement;
+        SEND_VTRACE(DBG1, "Temps(ms): %d", l_u32_mesureTempsTraitement);
+    }
 }
 
 void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 {
+    uint8_t l_u8_codeRetour = 0;
+
 	uint32_t l_u32_LectureTension = 0;
 	uint32_t l_u32_LectureIntensite = 0;
-	double l_dble_ValeurTension = 0.0;
-	double l_dble_ValeurIntensite = 0.0;
-	double l_dble_ValeurPuissance = 0.0;
-	double l_dble_ValeurEnergie = 0.0;
 
-	uint32_t l_u32_mesureTempsTraitement = 0;
-
-	l_u32_mesureTempsTraitement = millis();
+    s_coupleTensionIntensiteADC_t l_s_MeruresATrater;
 
 	// !!!!!!!!! Numéro de patte à définir !!!!!!!!!
-	l_u32_LectureTension = analogRead(0);
-	l_u32_LectureTension = analogRead(0);
+	l_s_MeruresATrater.m_u32_TensionADC = analogRead(0);
+	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(0);
 
-	l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_u32_LectureTension);
-	l_dble_ValeurIntensite = Convertcurrent.GetConvertedValue(l_u32_LectureIntensite);
+    l_u8_codeRetour = g_t_MeasuresPipe.Pipe_In(&l_s_MeruresATrater, sizeof(l_s_MeruresATrater));
 
-	l_dble_ValeurPuissance = l_dble_ValeurTension * l_dble_ValeurIntensite;
-	l_dble_ValeurEnergie = l_dble_ValeurPuissance * ((double)INTERVALLE_MESURE_PUISSANCE_MS)/1000.0;
-
-	l_u32_mesureTempsTraitement = millis() - l_u32_mesureTempsTraitement;
-	SEND_VTRACE(DBG1, "Temps: %d", l_u32_mesureTempsTraitement);
+    if(l_u8_codeRetour != 0)
+    {
+        SEND_VTRACE(ERROR, "Erreur entrée Pipe");
+    }
 }
+
+

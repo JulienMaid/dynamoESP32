@@ -66,10 +66,6 @@ uint16_t g_u16_PortDestUdp = 1234;
 /// @brief Niveau maximum de trace a remonter
 e_type_trace_t g_e_MaxDebugLevel = ALL;
 
-#if defined(ESP32)
-QueueHandle_t g_pt_queueTraces;
-#endif
-
 bool g_b_TracesUDP = false;
 bool g_b_TracesSerie = true;
 
@@ -186,7 +182,9 @@ uint8_t Send_Trace_Buffer(e_type_trace_t Type_Trace, const char Txt_Donnees[], u
 
   *P_Buffer_Temp = 0;
 
-  return 0;  //Send_Trace(Type_Trace, Buffer_Temp, Horodatage);
+  Serial.println(Buffer_Temp);
+
+  return 0; //Send_Trace(Type_Trace, Buffer_Temp, Horodatage);
 }
 
 uint8_t Test_Trace_Level(e_type_trace_t Level)
