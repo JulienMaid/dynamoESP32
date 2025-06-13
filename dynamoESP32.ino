@@ -80,7 +80,11 @@ void loop()
 
     	l_u32_mesureTempsTraitement = millis();
 
+    	/* pour éviter les accès concurrent à la ressource "userpipe" */
+    	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
+    	taskENTER_CRITICAL(&myMutex);
         l_u8_codeRetour = g_t_MeasuresPipe.Pipe_Out(&l_s_MeruresATraiter, sizeof(l_s_MeruresATraiter));
+    	taskEXIT_CRITICAL(&myMutex);
 
         if(l_u8_codeRetour == 0)
         {
@@ -115,7 +119,11 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 	l_s_MeruresATrater.m_u32_TensionADC = analogRead(0);
 	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(0);
 
+	/* pour éviter les accès concurrent à la ressource "userpipe" */
+	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
+	taskENTER_CRITICAL(&myMutex);
     l_u8_codeRetour = g_t_MeasuresPipe.Pipe_In(&l_s_MeruresATrater, sizeof(l_s_MeruresATrater));
+	taskEXIT_CRITICAL(&myMutex);
 
     if(l_u8_codeRetour != 0)
     {
