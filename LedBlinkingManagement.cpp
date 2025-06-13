@@ -9,9 +9,10 @@
 #include <Arduino.h>
 #include "LedBlinkingManagement.h"
 
-GestionLed::GestionLed(uint32_t p_u32_PortLed, bool p_b_AutonomousOperation,
-    uint8_t p_u8_SequenceLength) :
-    m_u32_PortLed(p_u32_PortLed), m_u8_SequenceLength(p_u8_SequenceLength), m_u8_SequenceIndex(0)
+GestionLed::GestionLed(uint32_t p_u32_PortLed, bool p_b_Reverse,
+		bool p_b_AutonomousOperation, uint8_t p_u8_SequenceLength) :
+    m_u32_PortLed(p_u32_PortLed), m_u8_SequenceLength(p_u8_SequenceLength), m_u8_SequenceIndex(0),
+	m_b_Reverse(p_b_Reverse)
 {
   m_ptu8_LedSequence = new uint8_t[m_u8_SequenceLength];
   ClearSequence();
@@ -69,11 +70,11 @@ void GestionLed::SetSequence4(void)
   memcpy(m_ptu8_LedSequence, l_tu8_LedSequence, m_u8_SequenceLength);
 }
 
-uint8_t GestionLed::GetSequence(bool p_b_Reverse)
+uint8_t GestionLed::GetSequence(void)
 {
   uint8_t l_u8_returnedValue;
 
-  if (p_b_Reverse == true)
+  if (m_b_Reverse == true)
   {
     l_u8_returnedValue = !m_ptu8_LedSequence[m_u8_SequenceIndex];
   }
@@ -100,5 +101,5 @@ void GestionLed::StaticGetSequence(uint32_t arg1, void *ClassGestionLed)
 {
   GestionLed *l_t_GestionLED = (GestionLed*) ClassGestionLed;
 
-  digitalWrite(l_t_GestionLED->GetPortLed(), l_t_GestionLED->GetSequence(false));
+  digitalWrite(l_t_GestionLED->GetPortLed(), l_t_GestionLED->GetSequence());
 }

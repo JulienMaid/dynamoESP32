@@ -17,15 +17,15 @@ TimerEvent_t g_t_TimerAffichage;
 User_Pipe g_t_MeasuresPipe(200);
 
 ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944);
-ConvertAnalogValue Convertcurrent(512, 10, -10.0, 10.0, 0, 1024);
+ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024);
 
 GestionLed g_t_GestionBuiltinLed(BUILTIN_LED);
 
 WS2811 bandeauLED(2,30);
 
 
-#define INTERVALLE_MESURE_PUISSANCE_MS		100
-#define INTERVALLE_AFFICHAGE_MESSURE_MS		1000
+#define INTERVALLE_MESURE_PUISSANCE_MS		200
+#define INTERVALLE_AFFICHAGE_MESSURE_MS		2000
 
 
 typedef struct
@@ -59,11 +59,15 @@ void setup()
 void loop()
 {
     static double l_dble_ValeurEnergieCumulee = 0.0;
-    double l_dble_ValeurPuissance = 0.0;
+    static double l_dble_ValeurPuissance = 0.0;
+    static double l_dble_ValeurTension = 0.0;
+    static double l_dble_ValeurIntensite = 0.0;
 
     if(g_t_TimerAffichage.IsTop() == true)
     {
-        SEND_VTRACE(INFO,"Puissance: %0.4f W, Energie produite: %4.6f Wh", l_dble_ValeurPuissance, l_dble_ValeurEnergieCumulee/3600.0);
+        SEND_VTRACE(INFO,"P: %0.1f W, En Prod: %4.3f Wh, U: %2.1f V, I: %2.2f A",
+        		l_dble_ValeurPuissance, l_dble_ValeurEnergieCumulee/3600.0 , l_dble_ValeurTension,
+				l_dble_ValeurIntensite);
     }
 
 
@@ -72,13 +76,14 @@ void loop()
         uint8_t l_u8_codeRetour = 0;
 
         s_coupleTensionIntensiteADC_t l_s_MeruresATraiter;
-	    double l_dble_ValeurTension = 0.0;
-	    double l_dble_ValeurIntensite = 0.0;
 	    double l_dble_ValeurEnergie = 0.0;
+
+		SEND_VTRACE(DBG1, "Reception pipe");
+
 
     	uint32_t l_u32_mesureTempsTraitement = 0;
 
-    	l_u32_mesureTempsTraitement = millis();
+    	l_u32_mesureTempsTraitement = micros();
 
     	/* pour éviter les accès concurrent à la ressource "userpipe" */
     	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
@@ -101,8 +106,8 @@ void loop()
             SEND_VTRACE(ERROR, "Erreur sortie Pipe");
         }
 
-        l_u32_mesureTempsTraitement = millis() - l_u32_mesureTempsTraitement;
-        SEND_VTRACE(DBG1, "Temps(ms): %d", l_u32_mesureTempsTraitement);
+        l_u32_mesureTempsTraitement = micros() - l_u32_mesureTempsTraitement;
+        SEND_VTRACE(DBG1, "Temps(us): %d", l_u32_mesureTempsTraitement);
     }
 }
 
@@ -118,6 +123,10 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 	// !!!!!!!!! Numéro de patte à définir !!!!!!!!!
 	l_s_MeruresATrater.m_u32_TensionADC = analogRead(0);
 	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(0);
+
+	l_s_MeruresATrater.m_u32_TensionADC = 200;
+	l_s_MeruresATrater.m_u32_IntensiteADC = 200;
+
 
 	/* pour éviter les accès concurrent à la ressource "userpipe" */
 	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;

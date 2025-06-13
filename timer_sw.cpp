@@ -180,8 +180,8 @@ bool TimerEvent_t::IsTop(void)
 #endif // UTILISER_TRACE_DEBUG_DS_TIMER_SW == 1
   }
 
-  if (IRQ_Timer_SW_En_Cours == true) // pour eviter de rester bloquer en boucle infinie...
-    return true;
+//  if (IRQ_Timer_SW_En_Cours == true) // pour eviter de rester bloquer en boucle infinie...
+//    return true;
 
   return false;
 }
