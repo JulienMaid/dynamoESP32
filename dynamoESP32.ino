@@ -53,7 +53,7 @@ void setup()
 
 	g_t_GestionBuiltinLed.SetSequence3();
 
-	FastLED.addLeds<NEOPIXEL, c_u32_BandeauLeds>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
+	FastLED.addLeds<WS2811, c_u32_BandeauLeds>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
 
 	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
 	g_t_TimerMesures.Start();
@@ -68,6 +68,17 @@ void loop()
     static double l_dble_ValeurPuissance = 0.0;
     static double l_dble_ValeurTension = 0.0;
     static double l_dble_ValeurIntensite = 0.0;
+
+    // Turn the LED on, then pause
+    g_t_BandeauLeds[0] = CRGB::Red;
+    FastLED.show();
+    delay(200);
+    // Now turn the LED off, then pause
+    g_t_BandeauLeds[0] = CRGB::Black;
+    FastLED.show();
+    delay(200);
+
+
 
     // Affichage des résultats mesurés et calculés
     if(g_t_TimerAffichage.IsTop() == true)
