@@ -1,14 +1,19 @@
 #include <Arduino.h>
 #include <Ticker.h>
+#include <FastLED.h>
 #include "timer_sw.h"
 #include "super_timer_sw.h"
 #include "RTC_soft.h"
 #include "trace_debug.h"
 #include "convertAnalogValue.h"
 #include "LedBlinkingManagement.h"
-#include "esp32WS2811.h"
 #include "userpipe.h"
 #include "pinout_definition.h"
+
+#define INTERVALLE_MESURE_PUISSANCE_MS		200
+#define INTERVALLE_AFFICHAGE_MESSURE_MS		2000
+
+#define NOMBRE_LEDS_BANDEAU					20
 
 Ticker g_t_blinker; // Composants pour généer une horloge pour TimerSW (objets type TimerEvent_t)
 
@@ -23,13 +28,7 @@ ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024); // Paramètres
 
 GestionLed g_t_GestionBuiltinLed(BUILTIN_LED); // Object pour gérer le clignotement de la LED du module ESP32
 
-WS2811 bandeauLED(c_u32_BandeauLeds,30); // Paramètre à ajuster selon choix du nombre de LEDs
-
-
-
-#define INTERVALLE_MESURE_PUISSANCE_MS		200
-#define INTERVALLE_AFFICHAGE_MESSURE_MS		2000
-
+CRGB g_t_BandeauLeds[NOMBRE_LEDS_BANDEAU];
 
 typedef struct
 {
@@ -53,6 +52,8 @@ void setup()
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
 	g_t_GestionBuiltinLed.SetSequence3();
+
+	FastLED.addLeds<NEOPIXEL, c_u32_BandeauLeds>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
 
 	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
 	g_t_TimerMesures.Start();
