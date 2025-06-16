@@ -42,9 +42,39 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/variants/doitESP32devkitV1</locationURI>
 		</link>
 		<link>
+			<name>libraries/ArduinoJson</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/ArduinoJson/7.4.1</locationURI>
+		</link>
+		<link>
+			<name>libraries/ArduinoOTA</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/ArduinoOTA</locationURI>
+		</link>
+		<link>
+			<name>libraries/ESPmDNS</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/ESPmDNS</locationURI>
+		</link>
+		<link>
+			<name>libraries/FastLED</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/FastLED/3.9.20</locationURI>
+		</link>
+		<link>
 			<name>libraries/Ticker</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/Ticker</locationURI>
+		</link>
+		<link>
+			<name>libraries/Update</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/Update</locationURI>
+		</link>
+		<link>
+			<name>libraries/WiFi</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/WiFi</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

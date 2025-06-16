@@ -22,6 +22,12 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/Ticker/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/FastLED/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ArduinoOTA/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ESPmDNS/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ArduinoJson/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/WiFi/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/Update/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.865310313" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -30,6 +36,12 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/Ticker/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/FastLED/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ArduinoOTA/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ESPmDNS/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ArduinoJson/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/WiFi/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/Update/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.706672604" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -38,6 +50,12 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/Ticker/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/FastLED/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ArduinoOTA/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ESPmDNS/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/ArduinoJson/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/WiFi/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/dynamoESP32/libraries/Update/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.604484746" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
@@ -78,7 +96,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/**/test*/**|libraries/?*/**/third-party/**|libraries/**/._*|libraries/?*/utility/*/*" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="libraries/FastLED/dev|libraries/FastLED/docs|libraries/FastLED/ci|libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/**/test*/**|libraries/?*/**/third-party/**|libraries/**/._*|libraries/?*/utility/*/*" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
