@@ -11,14 +11,16 @@
 #include "pinout_definition.h"
 
 #define INTERVALLE_MESURE_PUISSANCE_MS		200
-#define INTERVALLE_AFFICHAGE_MESSURE_MS		2000
+#define INTERVALLE_ENVOI_MESSURES_MS		2000
+#define INTERVALLE_AFFICHAGE_MESSURES_MS	100
 
 #define NOMBRE_LEDS_BANDEAU					16
 
 Ticker g_t_blinker; // Composants pour généer une horloge pour TimerSW (objets type TimerEvent_t)
 
 TimerEvent_t g_t_TimerMesures; // Timer cadençant la prise de mesure
-TimerEvent_t g_t_TimerAffichage; // Timer cadençant l'affichage des résultats mesurées et calculés
+TimerEvent_t g_t_TimerEnvoiMesures; // Timer cadençant l'envoi des résultats mesurées et calculés
+TimerEvent_t g_t_TimerMAJLeds; // Timer cadençant l'affichage des résultats mesurées et calculés
 
 User_Pipe g_t_MeasuresPipe(200); // Tuyau pour pouvoir stocker plusieurs mesures avant traitement
 
@@ -58,8 +60,11 @@ void setup()
 	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
 	g_t_TimerMesures.Start();
 
-    g_t_TimerAffichage.Init(nullptr, INTERVALLE_AFFICHAGE_MESSURE_MS, true);
-    g_t_TimerAffichage.Start();
+    g_t_TimerEnvoiMesures.Init(nullptr, INTERVALLE_ENVOI_MESSURES_MS, true);
+    g_t_TimerEnvoiMesures.Start();
+
+    g_t_TimerMAJLeds.Init(nullptr, INTERVALLE_AFFICHAGE_MESSURES_MS, true);
+    g_t_TimerMAJLeds.Start();
 }
 
 void loop()
@@ -69,27 +74,44 @@ void loop()
     static double l_dble_ValeurTension = 0.0;
     static double l_dble_ValeurIntensite = 0.0;
 
-    // Turn the LED on, then pause
-    g_t_BandeauLeds[0] = CRGB::Green;
-    g_t_BandeauLeds[1] = CRGB::Blue;
-    g_t_BandeauLeds[2] = CRGB::Blue;
-    FastLED.show();
-    delay(200);
-    // Now turn the LED off, then pause
-    g_t_BandeauLeds[0] = CRGB::Blue;
-    g_t_BandeauLeds[1] = CRGB::Red;
-    g_t_BandeauLeds[2] = CRGB::Green;
-    FastLED.show();
-    delay(200);
+    // Affichage des résultats calculés sur le bandeau de LEDs
+    if(g_t_TimerMAJLeds.IsTop() == true)
+    {
+    	static uint8_t l_u8_ValeurTestPuissance = 0;
+    	uint8_t l_u8_NbreLeds = 0;
+    	uint8_t l_u8_IndexLed = 0;
 
+        l_u8_NbreLeds = ((uint16_t)l_u8_ValeurTestPuissance)*((uint16_t)NOMBRE_LEDS_BANDEAU)/200;
 
+        l_u8_ValeurTestPuissance += 12;
 
-    // Affichage des résultats mesurés et calculés
-    if(g_t_TimerAffichage.IsTop() == true)
+        if(l_u8_ValeurTestPuissance > 200)
+        {
+        	l_u8_ValeurTestPuissance = 0;
+        }
+
+        for(l_u8_IndexLed=0; l_u8_IndexLed<NOMBRE_LEDS_BANDEAU; l_u8_IndexLed++)
+        {
+        	if(l_u8_IndexLed <= l_u8_NbreLeds)
+        	{
+        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Green;
+        	}
+        	else
+        	{
+        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Red;
+        	}
+        }
+
+        FastLED.show();
+    }
+
+    // Envoi des résultats mesurés et calculés
+    if(g_t_TimerEnvoiMesures.IsTop() == true)
     {
         SEND_VTRACE(INFO,"P: %0.1f W, En Prod: %4.3f Wh, U: %2.1f V, I: %2.2f A",
         		l_dble_ValeurPuissance, l_dble_ValeurEnergieCumulee/3600.0 , l_dble_ValeurTension,
 				l_dble_ValeurIntensite);
+
     }
 
     // Récupération des grandeurs mesurées et calculs
