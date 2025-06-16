@@ -13,7 +13,7 @@
 #define INTERVALLE_MESURE_PUISSANCE_MS		200
 #define INTERVALLE_AFFICHAGE_MESSURE_MS		2000
 
-#define NOMBRE_LEDS_BANDEAU					20
+#define NOMBRE_LEDS_BANDEAU					16
 
 Ticker g_t_blinker; // Composants pour généer une horloge pour TimerSW (objets type TimerEvent_t)
 
@@ -53,7 +53,7 @@ void setup()
 
 	g_t_GestionBuiltinLed.SetSequence3();
 
-	FastLED.addLeds<WS2811, c_u32_BandeauLeds>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
+	FastLED.addLeds<WS2812B, c_u32_BandeauLeds>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
 
 	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
 	g_t_TimerMesures.Start();
@@ -70,11 +70,15 @@ void loop()
     static double l_dble_ValeurIntensite = 0.0;
 
     // Turn the LED on, then pause
-    g_t_BandeauLeds[0] = CRGB::Red;
+    g_t_BandeauLeds[0] = CRGB::Green;
+    g_t_BandeauLeds[1] = CRGB::Blue;
+    g_t_BandeauLeds[2] = CRGB::Blue;
     FastLED.show();
     delay(200);
     // Now turn the LED off, then pause
-    g_t_BandeauLeds[0] = CRGB::Black;
+    g_t_BandeauLeds[0] = CRGB::Blue;
+    g_t_BandeauLeds[1] = CRGB::Red;
+    g_t_BandeauLeds[2] = CRGB::Green;
     FastLED.show();
     delay(200);
 
