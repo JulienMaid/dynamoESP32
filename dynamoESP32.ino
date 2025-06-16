@@ -92,7 +92,7 @@ void loop()
 
         for(l_u8_IndexLed=0; l_u8_IndexLed<NOMBRE_LEDS_BANDEAU; l_u8_IndexLed++)
         {
-        	if(l_u8_IndexLed <= l_u8_NbreLeds)
+        	if((l_u8_IndexLed <= l_u8_NbreLeds) && (l_u8_NbreLeds != 0))
         	{
         		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Green;
         	}
