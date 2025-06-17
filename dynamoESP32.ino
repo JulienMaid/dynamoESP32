@@ -54,8 +54,7 @@ void setup()
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
 	g_t_GestionBuiltinLed.SetSequence3();
-
-	FastLED.addLeds<WS2812B, c_u32_BandeauLeds>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
+	FastLED.addLeds<WS2812B, c_u32_BandeauLeds, GRB>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
 
 	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
 	g_t_TimerMesures.Start();
