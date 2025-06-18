@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 
+// @brief fonction équivalente à map mais passant de uint32_t en type double
 double mapDouble(long x, long in_min, long in_max, double out_min, double out_max);
 
 double mapDouble(long x, long in_min, long in_max, double out_min, double out_max)

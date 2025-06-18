@@ -15,7 +15,7 @@ class GestionLed
 public:
   //! Retourne la valeur courante de la séquence d'allumage
   //! @param p_u32_PortLed numéro de port de la Led à piloter
-  //! @param p_b_AutonomousOperation active ou non le fonctionne autonome de l'object (allumage auto de la led, période séquence 100ms)
+  //! @param p_b_Reverse pilote la LED en logique postive ou inversée
   //! @param p_b_AutonomousOperation active ou non le fonctionne autonome de l'object (allumage auto de la led, période séquence 100ms)
   //! @param p_u8_SequenceLength taille de la séquence d'allumage/extinction
   GestionLed(uint32_t p_u32_PortLed = 0, bool p_b_Reverse = false, bool p_b_AutonomousOperation = true,

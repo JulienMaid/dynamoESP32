@@ -154,7 +154,7 @@ bool TimerEvent_t::Exists(void)
   return TimerExists(this);
 }
 
-bool TimerEvent_t::Delete(void)
+uint8_t TimerEvent_t::Delete(void)
 {
   return TimerDelete(this);
 }

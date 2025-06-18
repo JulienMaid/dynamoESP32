@@ -2,8 +2,6 @@
 #include <Ticker.h>
 #include <FastLED.h>
 #include "timer_sw.h"
-#include "super_timer_sw.h"
-#include "RTC_soft.h"
 #include "trace_debug.h"
 #include "convertAnalogValue.h"
 #include "LedBlinkingManagement.h"
@@ -24,14 +22,18 @@ TimerEvent_t g_t_TimerMAJLeds; // Timer cadençant l'affichage des résultats me
 
 User_Pipe g_t_MeasuresPipe(200); // Tuyau pour pouvoir stocker plusieurs mesures avant traitement
 
-ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944); // Paramètres à ajuster selon composants utilisés
 
-ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024); // Paramètres à ajuster selon composants utilisés
+ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 944); // Objet pour calculer la tension correspondant à la meure
+// => Paramètres à ajuster selon composants utilisés
+
+ConvertAnalogValue Convertcurrent(512, 10, 10.0, -10.0, 0, 1024); // Objet pour calculer la tension correspondant à la meure
+// => Paramètres à ajuster selon composants utilisés
 
 GestionLed g_t_GestionBuiltinLed(BUILTIN_LED); // Object pour gérer le clignotement de la LED du module ESP32
 
-CRGB g_t_BandeauLeds[NOMBRE_LEDS_BANDEAU];
+CRGB g_t_BandeauLeds[NOMBRE_LEDS_BANDEAU]; // Tableau représentant chaque led du bandeau (objet FastLED)
 
+// Défintiion d'un struct pour stocker des couples tension - intensité en attente d'être traités
 typedef struct
 {
     uint32_t m_u32_TensionADC;
@@ -54,15 +56,20 @@ void setup()
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
 	g_t_GestionBuiltinLed.SetSequence3();
+
+	// initialisation de FastLED pour gérer le bandeau de LEDs
 	FastLED.addLeds<WS2812B, c_u32_BandeauLeds, GRB>(g_t_BandeauLeds, NOMBRE_LEDS_BANDEAU);
 
-	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, true);
+	// Initialisation puis démarrage du Timer gérant l'intervalle entre 2 mesures
+	g_t_TimerMesures.Init(FonctionMesures, INTERVALLE_MESURE_PUISSANCE_MS, Periodic_Timer);
 	g_t_TimerMesures.Start();
 
-    g_t_TimerEnvoiMesures.Init(nullptr, INTERVALLE_ENVOI_MESSURES_MS, true);
+	// Initialisation puis démarrage du Timer gérant l'intervalle entre 2 envois de mesures
+    g_t_TimerEnvoiMesures.Init(nullptr, INTERVALLE_ENVOI_MESSURES_MS, Periodic_Timer);
     g_t_TimerEnvoiMesures.Start();
 
-    g_t_TimerMAJLeds.Init(nullptr, INTERVALLE_AFFICHAGE_MESSURES_MS, true);
+	// Initialisation puis démarrage du Timer gérant l'intervalle entre 2 affichages de mesures sur le bandeau
+    g_t_TimerMAJLeds.Init(nullptr, INTERVALLE_AFFICHAGE_MESSURES_MS, Periodic_Timer);
     g_t_TimerMAJLeds.Start();
 }
 
