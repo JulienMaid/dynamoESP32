@@ -10,10 +10,9 @@
 #include <stdint.h>
 
 // Patte Bandeau de LEDs
-static constexpr uint32_t c_u32_BandeauLeds = 4;
-static constexpr uint32_t c_u32_ActivationDriver = 0;
+static constexpr uint8_t c_u8_BandeauLeds = 4;
 
 // Entrees analogiques
-static constexpr uint32_t c_u32_MesureTension = 0;
-static constexpr uint32_t c_u32_MesureIntensite = 0;
+static constexpr uint8_t c_u8_MesureTension = 35;
+static constexpr uint8_t c_u8_MesureIntensite = 39;
 
