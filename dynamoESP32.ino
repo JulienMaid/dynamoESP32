@@ -137,7 +137,7 @@ void loop()
         s_coupleTensionIntensiteADC_t l_s_MeruresATraiter;
 	    double l_dble_ValeurEnergie = 0.0;
 
-		SEND_VTRACE(DBG1, "Reception pipe");
+		SEND_VTRACE(DBG2, "Reception pipe");
 
 
     	uint32_t l_u32_mesureTempsTraitement = 0;
@@ -190,7 +190,7 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 	l_s_MeruresATrater.m_u32_TensionADC = analogRead(c_u8_MesureTension);
 	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(c_u8_MesureIntensite);
 
-	SEND_VTRACE(DBG1, "Tension(E/S: %d): %d, Intensite(E/S: %d): %d",
+	SEND_VTRACE(DBG2, "Tension(E/S: %d): %d, Intensite(E/S: %d): %d",
 			c_u8_MesureTension, l_s_MeruresATrater.m_u32_TensionADC,
 			c_u8_MesureIntensite, l_s_MeruresATrater.m_u32_IntensiteADC);
 
