@@ -7,6 +7,7 @@
 #include "LedBlinkingManagement.h"
 #include "userpipe.h"
 #include "pinout_definition.h"
+#include "NumericFilter.h"
 
 #define INTERVALLE_MESURE_PUISSANCE_MS		200
 #define INTERVALLE_ENVOI_MESSURES_MS		2000
@@ -23,15 +24,11 @@ TimerEvent_t g_t_TimerMAJLeds; // Timer cadençant l'affichage des résultats me
 User_Pipe g_t_MeasuresPipe(200); // Tuyau pour pouvoir stocker plusieurs mesures avant traitement
 
 
-ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 3470); // Objet pour calculer la tension correspondant à la meure
-// => Paramètres à ajuster selon composants utilisés
-
-ConvertAnalogValue Convertcurrent(2990, 15, 10.0, -10.0, 0, 4095); // Objet pour calculer la tension correspondant à la meure
-// => Paramètres à ajuster selon composants utilisés
-
 GestionLed g_t_GestionBuiltinLed(BUILTIN_LED); // Object pour gérer le clignotement de la LED du module ESP32
 
 CRGB g_t_BandeauLeds[NOMBRE_LEDS_BANDEAU]; // Tableau représentant chaque led du bandeau (objet FastLED)
+
+
 
 // Défintiion d'un struct pour stocker des couples tension - intensité en attente d'être traités
 typedef struct
@@ -52,7 +49,7 @@ void setup()
 	g_t_blinker.attach(0.05, Inc_Timer); // Résoltuion du timer 0.05 = 50ms
 
 	Init_Trace_Debug();
-    Set_Max_Debug_Level(INFO);
+    Set_Max_Debug_Level(DBG1);
 
 	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
 
@@ -76,7 +73,14 @@ void setup()
 
 void loop()
 {
-    static double l_dble_ValeurEnergieCumulee = 0.0;
+	static ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 3470); // Objet pour calculer la tension correspondant à la meure
+	// => Paramètres à ajuster selon composants utilisés
+	static ConvertAnalogValue Convertcurrent(2990, 15, 10.0, -10.0, 0, 4095); // Objet pour calculer la tension correspondant à la meure
+	// => Paramètres à ajuster selon composants utilisés
+	static NumericFilter<uint32_t> g_t_FiltrageMesureTension(0.80); // Filtre numérique pour lisser légérement la mesure de tension
+	static NumericFilter<uint32_t> g_t_FiltrageMesureIntensite(0.80); // Filtre numérique pour lisser légérement la mesure d'intensité
+
+	static double l_dble_ValeurEnergieCumulee = 0.0;
     static double l_dble_ValeurPuissance = 0.0;
     static double l_dble_ValeurTension = 0.0;
     static double l_dble_ValeurIntensite = 0.0;
@@ -146,6 +150,10 @@ void loop()
         l_u8_codeRetour = g_t_MeasuresPipe.Pipe_Out(&l_s_MeruresATraiter, sizeof(l_s_MeruresATraiter));
     	taskEXIT_CRITICAL(&myMutex);
 
+    	// Filtrage léger des mesures de tension et d'intensite
+    	l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
+    	l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
+
         if(l_u8_codeRetour == 0)
         {
 	        l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
@@ -164,7 +172,7 @@ void loop()
 
         // routine de debug pour mesure les temps de traitement en us
         l_u32_mesureTempsTraitement = micros() - l_u32_mesureTempsTraitement;
-        SEND_VTRACE(DBG1, "Temps(us): %d", l_u32_mesureTempsTraitement);
+        SEND_VTRACE(DBG2, "Temps(us): %d", l_u32_mesureTempsTraitement);
     }
 }
 
