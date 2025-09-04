@@ -9,7 +9,7 @@
 #include "pinout_definition.h"
 #include "NumericFilter.h"
 
-#define INTERVALLE_MESURE_PUISSANCE_MS		200
+#define INTERVALLE_MESURE_PUISSANCE_MS		1000//200
 #define INTERVALLE_ENVOI_MESSURES_MS		2000
 #define INTERVALLE_AFFICHAGE_MESSURES_MS	100
 
@@ -120,7 +120,7 @@ void loop()
         FastLED.show();
     }
 
-    // Envoi des résultats mesurés et calculés
+    // Envoi des résultats mesurés et calculés sur la ligne série
     if(g_t_TimerEnvoiMesures.IsTop() == true)
     {
         SEND_VTRACE(INFO,"P: %0.1f W, En Prod: %4.3f Wh, U: %2.1f V, I: %2.2f A",
@@ -132,9 +132,10 @@ void loop()
     // Récupération des grandeurs mesurées et calculs
     while(g_t_MeasuresPipe.Is_Pipe_Empty() == PIPE_NOT_EMPTY)
     {
-        uint8_t l_u8_codeRetour = 0;
+        uint8_t l_u8_codeRetour = 0; // code retour de l'objet g_t_MeasuresPipe
 
         s_coupleTensionIntensiteADC_t l_s_MeruresATraiter;
+
 	    double l_dble_ValeurEnergie = 0.0;
 
 		SEND_VTRACE(DBG2, "Reception pipe");
@@ -147,22 +148,28 @@ void loop()
     	/* pour éviter les accès concurrent à la ressource "userpipe" */
     	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
     	taskENTER_CRITICAL(&myMutex);
-        l_u8_codeRetour = g_t_MeasuresPipe.Pipe_Out(&l_s_MeruresATraiter, sizeof(l_s_MeruresATraiter));
+        // Récupération des valeurs mesurées et stockée dans le "tuyau"
+    	l_u8_codeRetour = g_t_MeasuresPipe.Pipe_Out(&l_s_MeruresATraiter, sizeof(l_s_MeruresATraiter));
     	taskEXIT_CRITICAL(&myMutex);
 
-    	// Filtrage léger des mesures de tension et d'intensite
-    	l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
-    	l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
 
         if(l_u8_codeRetour == 0)
         {
-	        l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
+            // Filtrage léger des mesures de tension et d'intensite
+            l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
+            l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
+
+            // Conversion des valeurs mesurées brutes en valeurs physiques (Tension en V et Intensité en A)
+            l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
 	        l_dble_ValeurIntensite = Convertcurrent.GetConvertedValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
 
+	        /* Calcul de la puissance */
 	        l_dble_ValeurPuissance = l_dble_ValeurTension * l_dble_ValeurIntensite;
-	        l_dble_ValeurEnergie = l_dble_ValeurPuissance * ((double)INTERVALLE_MESURE_PUISSANCE_MS)/1000.0;
-	        /* L'énergie est calculée en J => P(W) * T(s) = E(J) */
 
+	        /* L'énergie est calculée en J => P(W) * T(s) = E(J) */
+	        l_dble_ValeurEnergie = l_dble_ValeurPuissance * ((double)INTERVALLE_MESURE_PUISSANCE_MS)/1000.0;
+
+	        /* L'énergie précédemment calculée est cumulée avec les valeurs précédentes */
             l_dble_ValeurEnergieCumulee += l_dble_ValeurEnergie;
         }
         else
@@ -178,7 +185,7 @@ void loop()
 
 void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 {
-    uint8_t l_u8_codeRetour = 0;
+    uint8_t l_u8_codeRetour = 0; // code retour de g_t_MeasuresPipe
 
     s_coupleTensionIntensiteADC_t l_s_MeruresATrater;
 
@@ -186,7 +193,7 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
     (void)p_u32_param;
     (void)p_pv_param;
 
-	// !!!!!!!!! Numéro de patte à définir !!!!!!!!!
+    // Mesure de la tension et l'intensité à l'aide du convertisseur analogique numérique
 	l_s_MeruresATrater.m_u32_TensionADC = analogRead(c_u8_MesureTension);
 	l_s_MeruresATrater.m_u32_IntensiteADC = analogRead(c_u8_MesureIntensite);
 
@@ -194,13 +201,10 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param)
 			c_u8_MesureTension, l_s_MeruresATrater.m_u32_TensionADC,
 			c_u8_MesureIntensite, l_s_MeruresATrater.m_u32_IntensiteADC);
 
-	// pour fixer une valeur mesurée sans avoir de carte ni de vélo !
-//	l_s_MeruresATrater.m_u32_TensionADC = 200;
-//	l_s_MeruresATrater.m_u32_IntensiteADC = 200;
-
 	/* pour éviter les accès concurrent à la ressource "userpipe" */
 	portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
 	taskENTER_CRITICAL(&myMutex);
+	// Les valeurs mesurées non traitées (données brutes) sont envoyés dans le tuyau
     l_u8_codeRetour = g_t_MeasuresPipe.Pipe_In(&l_s_MeruresATrater, sizeof(l_s_MeruresATrater));
 	taskEXIT_CRITICAL(&myMutex);
 
