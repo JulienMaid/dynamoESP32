@@ -75,7 +75,7 @@ void loop()
 {
 	static ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 3470); // Objet pour calculer la tension correspondant à la meure
 	// => Paramètres à ajuster selon composants utilisés
-	static ConvertAnalogValue Convertcurrent(2990, 15, 10.0, -10.0, 0, 4095); // Objet pour calculer la tension correspondant à la meure
+	static ConvertAnalogValue Convertcurrent(2990, 15, 3.00, -10.0, 2608, 4095); // Objet pour calculer la tension correspondant à la meure
 	// => Paramètres à ajuster selon composants utilisés
 	static NumericFilter<uint32_t> g_t_FiltrageMesureTension(0.80); // Filtre numérique pour lisser légérement la mesure de tension
 	static NumericFilter<uint32_t> g_t_FiltrageMesureIntensite(0.80); // Filtre numérique pour lisser légérement la mesure d'intensité
