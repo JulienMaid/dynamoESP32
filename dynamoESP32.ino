@@ -9,7 +9,7 @@
 #include "pinout_definition.h"
 #include "NumericFilter.h"
 
-#define INTERVALLE_MESURE_PUISSANCE_MS		1000//200
+#define INTERVALLE_MESURE_PUISSANCE_MS		200
 #define INTERVALLE_ENVOI_MESSURES_MS		2000
 #define INTERVALLE_AFFICHAGE_MESSURES_MS	100
 
@@ -88,24 +88,21 @@ void loop()
     // Affichage des résultats calculés sur le bandeau de LEDs
     if(g_t_TimerMAJLeds.IsTop() == true)
     {
-    	static uint8_t l_u8_ValeurTestPuissance = 0;
     	uint8_t l_u8_NbreLeds = 0;
     	uint8_t l_u8_IndexLed = 0;
 
-        l_u8_NbreLeds = ((uint16_t)l_u8_ValeurTestPuissance)*((uint16_t)NOMBRE_LEDS_BANDEAU)/200;
+        l_u8_NbreLeds = ((uint16_t)l_dble_ValeurPuissance)*((uint16_t)NOMBRE_LEDS_BANDEAU)/200;
 
-        l_u8_ValeurTestPuissance += 12;
-
-        if(l_u8_ValeurTestPuissance > 200)
+        if(l_u8_NbreLeds > NOMBRE_LEDS_BANDEAU)
         {
-        	l_u8_ValeurTestPuissance = 0;
+            l_u8_NbreLeds = NOMBRE_LEDS_BANDEAU;
         }
 
         for(l_u8_IndexLed=0; l_u8_IndexLed<NOMBRE_LEDS_BANDEAU; l_u8_IndexLed++)
         {
         	if((l_u8_IndexLed == l_u8_NbreLeds) && (l_u8_NbreLeds != 0))
         	{
-        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Blue;
+        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Red;
         	}
         	else if((l_u8_IndexLed < l_u8_NbreLeds) && (l_u8_NbreLeds != 0))
         	{
@@ -113,7 +110,7 @@ void loop()
         	}
         	else
         	{
-        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Red;
+        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Black;
         	}
         }
 
