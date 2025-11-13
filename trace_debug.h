@@ -57,7 +57,10 @@ extern Txt_Type_Trace_t Table_Type_Trace[11];
  * @param void
  * @return void
  */
-void Init_Trace_Debug(void);
+//void Init_Trace_Debug(void);
+void Init_Trace_Debug(bool p_b_TraceSerie=true, bool p_b_TraceUDP=false,
+        std::string p_t_IPTracesUDP="192.168.1.255", uint16_t p_u16_PortDestTracesUDP=1234);
+
 
 #define SEND_TRACE(typeTrace, TxtDonnees)  \
     Send_Trace((typeTrace), (TxtDonnees), true, __FILENAME__, __FUNCTION__, __LINE__)
