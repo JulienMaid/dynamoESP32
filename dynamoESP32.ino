@@ -9,6 +9,8 @@
 #include "pinout_definition.h"
 #include "NumericFilter.h"
 
+#include "outils_wifi.h"
+
 #define INTERVALLE_MESURE_PUISSANCE_MS		200
 #define INTERVALLE_ENVOI_MESSURES_MS		2000
 #define INTERVALLE_AFFICHAGE_MESSURES_MS	100
@@ -45,13 +47,22 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param);
 
 void setup()
 {
+    bool l_b_wifi_Connecte = false;
+
 	// initialisation du Timer matériel pour le module TimerSW
 	g_t_blinker.attach(0.05, Inc_Timer); // Résoltuion du timer 0.05 = 50ms
 
-	Init_Trace_Debug();
-    Set_Max_Debug_Level(DBG1);
+	Serial.begin(115200);
+	// connection au wifi du Bocal si disponible
+	l_b_wifi_Connecte = connecterWifi(BUILTIN_LED);
 
-	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
+	Init_Trace_Debug(true, true);
+	Set_Max_Debug_Level(DBG1);
+
+	SEND_VTRACE(INFO, "Demarrage Velo Dynamo");
+
+	SEND_VTRACE(INFO, "Wifi: %d", l_b_wifi_Connecte);
+
 
 	g_t_GestionBuiltinLed.SetSequence3();
 

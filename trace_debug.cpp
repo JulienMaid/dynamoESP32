@@ -35,7 +35,7 @@
 #include <string.h>
 #include <Arduino.h>
 
-//#include <WiFiUdp.h>
+#include <WiFiUdp.h>
 
 #define Send_String_UARTX(a,b) Serial.print(a)
 
@@ -60,26 +60,37 @@ Txt_Type_Trace_t Table_Type_Trace[11] = { { NONE, Txt_None }, { ERROR, Txt_Error
     Txt_Debug1 }, { DBG2, Txt_Debug2 }, { DBG3, Txt_Debug3 }, { DBG4, Txt_Debug4 }, { DBGX,
     Txt_DebugSpecif }, { ALL, Txt_All } };
 
-std::string g_t_IPDestTracesUDP("192.168.123.255");
+std::string g_t_IPDestTracesUDP("192.168.1.255");
 uint16_t g_u16_PortDestUdp = 1234;
 
 /// @brief Niveau maximum de trace a remonter
 e_type_trace_t g_e_MaxDebugLevel = ALL;
 
-bool g_b_TracesUDP = false;
-bool g_b_TracesSerie = true;
+static bool g_b_TracesUDP = false;
+static bool g_b_TracesSerie = true;
 
 //********************************
 //* Implementation des fonctions *
 //********************************
 
-void Init_Trace_Debug(void)
+void Init_Trace_Debug(bool p_b_TraceSerie, bool p_b_TraceUDP, std::string p_t_IPTracesUDP, uint16_t p_u16_PortDestTracesUDP)
 {
+
+  g_b_TracesSerie = p_b_TraceSerie;
+  g_b_TracesUDP = p_b_TraceUDP;
 
   Init_RTC_Soft();
 
-  Serial.begin(115200);
+  if(g_b_TracesSerie == true)
+  {
+    Serial.begin(115200);
+  }
 
+  if(g_b_TracesUDP == true)
+  {
+    g_t_IPDestTracesUDP = p_t_IPTracesUDP;
+    g_u16_PortDestUdp = p_u16_PortDestTracesUDP;
+  }
 }
 
 const char* Get_Text_Type_Trace(e_type_trace_t Type_Trace)
@@ -182,7 +193,36 @@ uint8_t Send_Trace_Buffer(e_type_trace_t Type_Trace, const char Txt_Donnees[], u
 
   *P_Buffer_Temp = 0;
 
-  Serial.println(Buffer_Temp);
+
+  if(g_b_TracesSerie == true)
+  {
+    Serial.println(Buffer_Temp);
+  }
+
+  if(g_b_TracesUDP == true)
+  {
+    WiFiUDP l_t_udp;
+    uint8_t u8_retourFct;
+    std::string l_t_localBuffer(Buffer_Temp);
+
+    l_t_udp.beginPacket(g_t_IPDestTracesUDP.c_str(), g_u16_PortDestUdp);
+    l_t_udp.write((const uint8_t*) l_t_localBuffer.c_str(), l_t_localBuffer.size());
+    u8_retourFct = l_t_udp.endPacket();
+
+    if (u8_retourFct != 1)
+    {
+      // Si l'envoie ne s'estpas bien passé, on attend quelques ticks et on retente une 2nde fois
+      vTaskDelay(10);
+      const unsigned char tu8_buff[] = "2nd...";
+
+      l_t_udp.beginPacket(g_t_IPDestTracesUDP.c_str(), g_u16_PortDestUdp);
+      l_t_udp.write(tu8_buff, sizeof(tu8_buff) - 1);
+      l_t_udp.write((const uint8_t*) l_t_localBuffer.c_str(), l_t_localBuffer.size());
+      l_t_udp.endPacket();
+    }
+  }
+
+
 
   return 0; //Send_Trace(Type_Trace, Buffer_Temp, Horodatage);
 }
@@ -246,7 +286,34 @@ uint8_t Send_VTrace(e_type_trace_t Type_Trace, bool Horodatage, const char *i_ps
         ts8_BufferTx, i_ps8_nomFonction, i_ps8_nomFichier, i_u16_numeroLigne);
   }
 
-  Serial.println(ts8_BufferTxString);
+
+  if(g_b_TracesSerie == true)
+  {
+    Serial.println(ts8_BufferTxString);
+  }
+
+  if(g_b_TracesUDP == true)
+  {
+    WiFiUDP l_t_udp;
+    uint8_t u8_retourFct;
+
+    l_t_udp.beginPacket(g_t_IPDestTracesUDP.c_str(), g_u16_PortDestUdp);
+    l_t_udp.write((const uint8_t*) ts8_BufferTxString, strlen(ts8_BufferTxString));
+    u8_retourFct = l_t_udp.endPacket();
+
+    if (u8_retourFct != 1)
+    {
+      // Si l'envoie ne s'estpas bien passé, on attend quelques ticks et on retente une 2nde fois
+      vTaskDelay(10);
+      const unsigned char tu8_buff[] = "2nd...";
+
+      l_t_udp.beginPacket(g_t_IPDestTracesUDP.c_str(), g_u16_PortDestUdp);
+      l_t_udp.write(tu8_buff, sizeof(tu8_buff) - 1);
+      l_t_udp.write((const uint8_t*) ts8_BufferTxString, strlen(ts8_BufferTxString));
+      l_t_udp.endPacket();
+    }
+  }
+
 
   return 0;
 
