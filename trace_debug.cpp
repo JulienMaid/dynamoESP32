@@ -286,7 +286,34 @@ uint8_t Send_VTrace(e_type_trace_t Type_Trace, bool Horodatage, const char *i_ps
         ts8_BufferTx, i_ps8_nomFonction, i_ps8_nomFichier, i_u16_numeroLigne);
   }
 
-  Serial.println(ts8_BufferTxString);
+
+  if(g_b_TracesSerie == true)
+  {
+    Serial.println(ts8_BufferTxString);
+  }
+
+  if(g_b_TracesUDP == true)
+  {
+    WiFiUDP l_t_udp;
+    uint8_t u8_retourFct;
+
+    l_t_udp.beginPacket(g_t_IPDestTracesUDP.c_str(), g_u16_PortDestUdp);
+    l_t_udp.write((const uint8_t*) ts8_BufferTxString, strlen(ts8_BufferTxString));
+    u8_retourFct = l_t_udp.endPacket();
+
+    if (u8_retourFct != 1)
+    {
+      // Si l'envoie ne s'estpas bien passé, on attend quelques ticks et on retente une 2nde fois
+      vTaskDelay(10);
+      const unsigned char tu8_buff[] = "2nd...";
+
+      l_t_udp.beginPacket(g_t_IPDestTracesUDP.c_str(), g_u16_PortDestUdp);
+      l_t_udp.write(tu8_buff, sizeof(tu8_buff) - 1);
+      l_t_udp.write((const uint8_t*) ts8_BufferTxString, strlen(ts8_BufferTxString));
+      l_t_udp.endPacket();
+    }
+  }
+
 
   return 0;
 

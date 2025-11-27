@@ -59,7 +59,7 @@ void setup()
 	Init_Trace_Debug(true, true);
 	Set_Max_Debug_Level(DBG1);
 
-	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
+	SEND_VTRACE(INFO, "Demarrage Velo Dynamo");
 
 	SEND_VTRACE(INFO, "Wifi: %d", l_b_wifi_Connecte);
 
