@@ -84,12 +84,12 @@ void setup()
 
 void loop()
 {
-	static ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 3470); // Objet pour calculer la tension correspondant à la meure
+	static ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 15.0, 0, 2000); // Objet pour calculer la tension correspondant à la meure
 	// => Paramètres à ajuster selon composants utilisés
 	static ConvertAnalogValue Convertcurrent(2990, 15, 3.00, -10.0, 2608, 4095); // Objet pour calculer la tension correspondant à la meure
 	// => Paramètres à ajuster selon composants utilisés
-	static NumericFilter<uint32_t> g_t_FiltrageMesureTension(0.80); // Filtre numérique pour lisser légérement la mesure de tension
-	static NumericFilter<uint32_t> g_t_FiltrageMesureIntensite(0.80); // Filtre numérique pour lisser légérement la mesure d'intensité
+	static NumericFilter<uint32_t> g_t_FiltrageMesureTension(0.70); // Filtre numérique pour lisser légérement la mesure de tension
+	static NumericFilter<uint32_t> g_t_FiltrageMesureIntensite(0.70); // Filtre numérique pour lisser légérement la mesure d'intensité
 
 	static double l_dble_ValeurEnergieCumulee = 0.0;
     static double l_dble_ValeurPuissance = 0.0;
@@ -163,12 +163,12 @@ void loop()
 
         if(l_u8_codeRetour == 0)
         {
-            // Filtrage léger des mesures de tension et d'intensite
-            l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
-            l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
+          // Filtrage léger des mesures de tension et d'intensite
+          l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
+          l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
 
-            // Conversion des valeurs mesurées brutes en valeurs physiques (Tension en V et Intensité en A)
-            l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
+          // Conversion des valeurs mesurées brutes en valeurs physiques (Tension en V et Intensité en A)
+          l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
 	        l_dble_ValeurIntensite = Convertcurrent.GetConvertedValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
 
 	        /* Calcul de la puissance */
