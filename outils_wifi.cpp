@@ -67,9 +67,9 @@ bool connecterWifi(uint8_t i_u8_NumeroPortClignote)
 
           while ((WiFi.status() != WL_CONNECTED) && (TempoConnection.IsTop() == false))
           {
-            delay(250);
+            delay(100);
             digitalWrite(i_u8_NumeroPortClignote, 1);
-            delay(250);
+            delay(100);
             digitalWrite(i_u8_NumeroPortClignote, 0);
 
             Serial.print(".");

@@ -56,7 +56,7 @@ void setup()
 	// connection au wifi du Bocal si disponible
 	l_b_wifi_Connecte = connecterWifi(BUILTIN_LED);
 
-	Init_Trace_Debug(true, true);
+	Init_Trace_Debug(true, l_b_wifi_Connecte);
 	Set_Max_Debug_Level(DBG1);
 
 	SEND_VTRACE(INFO, "Demarrage Velo Dynamo");
