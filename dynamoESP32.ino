@@ -9,7 +9,9 @@
 #include "pinout_definition.h"
 #include "NumericFilter.h"
 
-#define INTERVALLE_MESURE_PUISSANCE_MS		1000//200
+#include "outils_wifi.h"
+
+#define INTERVALLE_MESURE_PUISSANCE_MS		200
 #define INTERVALLE_ENVOI_MESSURES_MS		2000
 #define INTERVALLE_AFFICHAGE_MESSURES_MS	100
 
@@ -45,13 +47,22 @@ void FonctionMesures(uint32_t p_u32_param, void * p_pv_param);
 
 void setup()
 {
+    bool l_b_wifi_Connecte = false;
+
 	// initialisation du Timer matériel pour le module TimerSW
 	g_t_blinker.attach(0.05, Inc_Timer); // Résoltuion du timer 0.05 = 50ms
 
-	Init_Trace_Debug();
-    Set_Max_Debug_Level(DBG1);
+	Serial.begin(115200);
+	// connection au wifi du Bocal si disponible
+	l_b_wifi_Connecte = connecterWifi(BUILTIN_LED);
 
-	SEND_VTRACE(INFO, "Démarrage Vélo Dynamo");
+	Init_Trace_Debug(true, l_b_wifi_Connecte);
+	Set_Max_Debug_Level(DBG1);
+
+	SEND_VTRACE(INFO, "Demarrage Velo Dynamo");
+
+	SEND_VTRACE(INFO, "Wifi: %d", l_b_wifi_Connecte);
+
 
 	g_t_GestionBuiltinLed.SetSequence3();
 
@@ -73,12 +84,12 @@ void setup()
 
 void loop()
 {
-	static ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 24.0, 0, 3470); // Objet pour calculer la tension correspondant à la meure
+	static ConvertAnalogValue ConvertVoltage(0, 0, 0.0, 15.0, 0, 2000); // Objet pour calculer la tension correspondant à la meure
 	// => Paramètres à ajuster selon composants utilisés
 	static ConvertAnalogValue Convertcurrent(2990, 15, 3.00, -10.0, 2608, 4095); // Objet pour calculer la tension correspondant à la meure
 	// => Paramètres à ajuster selon composants utilisés
-	static NumericFilter<uint32_t> g_t_FiltrageMesureTension(0.80); // Filtre numérique pour lisser légérement la mesure de tension
-	static NumericFilter<uint32_t> g_t_FiltrageMesureIntensite(0.80); // Filtre numérique pour lisser légérement la mesure d'intensité
+	static NumericFilter<uint32_t> g_t_FiltrageMesureTension(0.70); // Filtre numérique pour lisser légérement la mesure de tension
+	static NumericFilter<uint32_t> g_t_FiltrageMesureIntensite(0.70); // Filtre numérique pour lisser légérement la mesure d'intensité
 
 	static double l_dble_ValeurEnergieCumulee = 0.0;
     static double l_dble_ValeurPuissance = 0.0;
@@ -88,24 +99,21 @@ void loop()
     // Affichage des résultats calculés sur le bandeau de LEDs
     if(g_t_TimerMAJLeds.IsTop() == true)
     {
-    	static uint8_t l_u8_ValeurTestPuissance = 0;
     	uint8_t l_u8_NbreLeds = 0;
     	uint8_t l_u8_IndexLed = 0;
 
-        l_u8_NbreLeds = ((uint16_t)l_u8_ValeurTestPuissance)*((uint16_t)NOMBRE_LEDS_BANDEAU)/200;
+        l_u8_NbreLeds = ((uint16_t)l_dble_ValeurPuissance)*((uint16_t)NOMBRE_LEDS_BANDEAU)/200;
 
-        l_u8_ValeurTestPuissance += 12;
-
-        if(l_u8_ValeurTestPuissance > 200)
+        if(l_u8_NbreLeds > NOMBRE_LEDS_BANDEAU)
         {
-        	l_u8_ValeurTestPuissance = 0;
+            l_u8_NbreLeds = NOMBRE_LEDS_BANDEAU;
         }
 
         for(l_u8_IndexLed=0; l_u8_IndexLed<NOMBRE_LEDS_BANDEAU; l_u8_IndexLed++)
         {
         	if((l_u8_IndexLed == l_u8_NbreLeds) && (l_u8_NbreLeds != 0))
         	{
-        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Blue;
+        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Red;
         	}
         	else if((l_u8_IndexLed < l_u8_NbreLeds) && (l_u8_NbreLeds != 0))
         	{
@@ -113,7 +121,7 @@ void loop()
         	}
         	else
         	{
-        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Red;
+        		g_t_BandeauLeds[l_u8_IndexLed] = CRGB::Black;
         	}
         }
 
@@ -155,12 +163,12 @@ void loop()
 
         if(l_u8_codeRetour == 0)
         {
-            // Filtrage léger des mesures de tension et d'intensite
-            l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
-            l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
+          // Filtrage léger des mesures de tension et d'intensite
+          l_s_MeruresATraiter.m_u32_TensionADC = g_t_FiltrageMesureTension.SetNewValue(l_s_MeruresATraiter.m_u32_TensionADC);
+          l_s_MeruresATraiter.m_u32_IntensiteADC = g_t_FiltrageMesureIntensite.SetNewValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
 
-            // Conversion des valeurs mesurées brutes en valeurs physiques (Tension en V et Intensité en A)
-            l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
+          // Conversion des valeurs mesurées brutes en valeurs physiques (Tension en V et Intensité en A)
+          l_dble_ValeurTension = ConvertVoltage.GetConvertedValue(l_s_MeruresATraiter.m_u32_TensionADC);
 	        l_dble_ValeurIntensite = Convertcurrent.GetConvertedValue(l_s_MeruresATraiter.m_u32_IntensiteADC);
 
 	        /* Calcul de la puissance */
